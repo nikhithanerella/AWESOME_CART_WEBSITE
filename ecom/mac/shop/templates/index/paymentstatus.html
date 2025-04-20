@@ -1,0 +1,26 @@
+{% extends 'index/basic.html' %}
+{% block title %}CART{% endblock %}
+{% block body %}
+{% load static %}
+{% block css%}
+<style>
+    
+</style>
+{% endblock %}
+{% block body %}
+  <div class="container">
+    {{response}}
+    <div class="col my-4">
+        {% if response.RESPCODE=='01'%}
+         order success
+         {% else %}
+         order failure
+         {% endif %}
+    </div>
+  </div>
+    
+{% endblock %}
+{% block script %}
+    
+{% endblock %}
+

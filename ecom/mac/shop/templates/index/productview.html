@@ -1,0 +1,150 @@
+{% extends 'index/basic.html'%}
+{% block title%}{{pro.product_name}}{% endblock %}
+{% block css %}
+<style>
+    .row img {
+        width: 100%;
+        height: 300px; /* Adjust this value as needed */
+        object-fit: cover;
+    }
+</style>
+{% endblock %}
+{% block body %}
+    <div class="container my-4">
+        <div class="row">
+        <div class="col-md-4">
+        <div class="row">
+            <img src="/media/{{pro.image}}">
+        </div>
+           <div class="col">
+              <a href="/checkout"><button class="btn btn-primary my-3 mx-3">Buy Now</button></a>
+              <span id='divpr{{pro.product_id}}'>                                          
+                <button type="submit" id="pr{{pro.product_id}}" class="btn btn-primary cart mx-3" data-image="{{ pro.image.url }}">Add to cart</button>
+             </span>
+             <a href="/wishlist"<button type="submit" id="pr{{pro.product_id}}" class="btn btn-primary wishlist" data-image="{{ pro.image.url }}">Add to wishlist</button></a>
+           </div>
+        </div>
+        <div class="col-md-8">
+            <h5><span id="namepr{{pro.product_id}}">{{pro.product_name}}</span></h5>
+            <p><b>Rs.{{pro.price}}</b></p>
+            <p class="card-title">ProductID - <span id="IDpr{{pro.product_id}}">{{ pro.product_id }}</span></p>
+            <p>{{pro.desc}}</p>
+        </div>
+        </div>
+    </div>
+{% block js %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Add jQuery -->
+    <script>
+        if(localStorage.getItem('cart') == null) {
+            var cart = {};
+        } else {
+            cart = JSON.parse(localStorage.getItem('cart'));
+            updateCart(cart);
+        }
+        console.log(cart);
+        // jQuery event listener for the 'Add to cart' button
+        $('.cart').click(function() {
+            var idstr=this.id.toString();
+            if(cart[idstr]!=undefined){
+                qty=cart[idstr][0]+1;
+            }
+            else{
+                qty=1;
+            }
+            updateCart(cart,idstr)
+            localStorage.setItem('cart',JSON.stringify(cart));
+        });
+        function updateCart(cart,idstr)
+        {
+            var element = document.getElementById('div' + idstr);
+            console.log(element);
+            if (element) {
+                element.innerHTML = "<button id='minus" + idstr + "' class='btn btn-primary minus'>-</button> <span id='val" + idstr + "'>" + cart[idstr][0] + " </span><button id='plus" + idstr + "' class='btn btn-primary plus'> + </button>";
+            } 
+            updatePopover(cart);
+        }
+        $(document).on('click', '.plus', function() {
+            var idstr = this.id.replace('plus', '');
+            cart[idstr][0] = cart[idstr][0]+1;
+            updateCart(cart, idstr);
+            localStorage.setItem('cart', JSON.stringify(cart));
+        });
+        
+        $(document).on('click', '.minus', function() {
+            var idstr = this.id.replace('minus', '');
+            if(cart[idstr][0] > 1) {
+                cart[idstr][0] = cart[idstr][0]-1;
+            } 
+            else if(cart[idstr][0]==1){
+                cart[idstr][0]=0
+            }else {
+                 cart[idstr][0]=0;
+            }
+            updateCart(cart, idstr);
+            localStorage.setItem('cart', JSON.stringify(cart));
+        });
+        function updatePopover(cart) {
+            var popStr = "";
+            popStr = popStr + "<h5>Cart for your items</h5><div class='row mx-2 my-2'>";
+            var i = 1;
+            // Loop through the cart to generate content
+            for (var item in cart) {
+                // Access the correct product name using the right id
+                var productName = document.getElementById('namepr' + item.replace('pr', ''));
+                console.log(productName);
+                if (productName && cart[item][0]!=0) {
+                    popStr = popStr + i + ".";
+                    popStr = popStr + productName.innerHTML.slice(0, 19) + "... QTY: " + cart[item][0] + "<br>";
+                    i = i + 1;
+                }   
+            }
+            console.log(popStr);
+            // Add Checkout and ClearCart buttons to popStr
+            popStr=popStr+"<a href='/shop/checkout' class='check'>CheckOut</a>";
+            popStr = popStr + "</div>"    
+            // Get the popcart element and update its data-bs-content attribute
+            var popcart = document.getElementById('popcart');
+            if (popcart) {
+                // Set the content of the popover
+                popcart.setAttribute('data-bs-content', popStr);
+                popcart.setAttribute('data-bs-html', 'true'); // Ensure HTML is enabled
+        
+                // Destroy the previous popover if it exists
+                var existingPopover = bootstrap.Popover.getInstance(popcart);
+                if (existingPopover) {
+                    existingPopover.dispose();
+                }
+        
+                // Reinitialize and show the updated popover after a short delay
+                setTimeout(function () {
+                    // Initialize the popover
+                    var popover = new bootstrap.Popover(popcart);
+                    popover.show();
+                }, 10); // Small delay to allow content to be rendered
+            }
+        }
+        //dealing with the wishlist
+        wishlist = JSON.parse(localStorage.getItem('wishlist'));
+        $('.wishlist').click(function() {
+            var idstr = this.id.toString();
+            var imageUrl = $(this).data('image');
+            user="{{user}}"
+            console.log(user);
+            if (idstr) { // Make sure idstr is valid
+                var wid=document.getElementById('ID'+idstr).innerHTML; 
+                var wname = document.getElementById('name' + idstr).innerHTML;
+        
+                // Ensure wishlist is initialized and update it
+                if (!wishlist) {
+                    wishlist = {};
+                }
+                wishlist[idstr] = [wid, wname,imageUrl,idstr,user];
+                console.log(wishlist);
+                // Save the updated wishlist back to localStorage
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            } 
+        });
+    </script>
+    {% endblock js %}
+{% endblock %}

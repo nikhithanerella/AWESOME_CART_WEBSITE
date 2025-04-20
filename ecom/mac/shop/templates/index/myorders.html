@@ -1,0 +1,155 @@
+{% extends 'index/basic.html'%}
+{% block title%}My Orders{% endblock %}
+{% block css %}
+<style>
+    /* General container styles */
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Order card container styling */
+    .order-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 30px;
+    }
+
+    /* Styling for individual order cards */
+    .order-card {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        width: 100%;
+        max-width: 800px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Header styling within the order card */
+    .order-header {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+    }
+
+    .order-id {
+        color: #007bff;
+    }
+
+    /* Order items section styling */
+    .order-items {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .order-items h5 {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    /* List styling for items */
+    .order-items-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .order-items-list li {
+        background-color: #f8f9fa;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .order-items-list li:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Styling for the image inside the order list */
+    .order-items-list li img {
+        width: 100px;  /* Adjusted image size */
+        height: 100px; /* Make sure the image is square */
+        border-radius: 5px;
+        margin-right: 20px; /* Space between image and text */
+    }
+
+    /* Styling for text inside each list item */
+    .order-items-list li div {
+        font-size: 14px;
+        color: #333;
+    }
+
+    .order-items-list li div strong {
+        font-weight: bold;
+        color: #007bff;
+    }
+</style>
+{% endblock css %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mb-4" style="font-size: 32px; font-weight: bold; color: #333;">My Orders</h2>
+    <div class="order-container">
+    {% for order in mine %}
+        <div class="order-card">
+            <div class="order-header">
+                Order ID: <span class="order-id">{{ order.order_id }}</span>
+            </div>
+            <div class="order-items">
+                <h5>Items:</h5>
+                <ul class="order-items-list">
+                    {% if order.items_json %}
+                        {% for item_key, item_value in order.items_json.items %}
+                        <li>
+                            <a href="/shop/products/{{item_value.3}}"><img src="{{ item_value.2 }}" alt="Product Image"></a>
+                            <div>
+                                <strong>Product ID:</strong> {{ item_key }} <br>
+                                <strong>Quantity:</strong> {{ item_value.0 }} <br>
+                                <strong>Product Name:</strong> {{ item_value.1 }}<br>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        <a href="{% url 'orderTracker' %}?email={{ order.email }}&orderid={{ order.order_id }}">
+                            <button>Track Order</button>
+                        </a>
+                    {% else %}
+                    <li>No items in this order.</li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endblock body %}
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Add jQuery -->
+<script>
+    if(localStorage.getItem('cart') == null) {
+        var cart = {};
+    } else {
+        cart = JSON.parse(localStorage.getItem('cart'));
+    }
+    var items_json = JSON.stringify(cart);
+    console.log(items_json);
+</script>
+{% endblock script %}
